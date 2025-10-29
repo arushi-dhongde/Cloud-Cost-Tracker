@@ -1,65 +1,54 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+import CostChart from "../component/CostChart";
+import { mockData } from "../data/mockData";
+
+export default function Page() {
+  const [range, setRange] = useState("year");
+
+  const filtered = () => {
+    let data = mockData;
+    if (range === "last6") data = mockData.slice(6);
+    if (range === "quarter") data = mockData.slice(9);
+    return {
+      labels: data.map((d) => d.month),
+      ec2: data.map((d) => d.ec2_hours),
+      s3: data.map((d) => d.s3_gb),
+      cost: data.map((d) => d.cost),
+    };
+  };
+
+  const { labels, ec2, s3, cost } = filtered();
+  const total = cost.reduce((a, b) => a + b, 0);
+  const avg = (total / cost.length).toFixed(2);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main style={{ maxWidth: 980, margin: "32px auto", fontFamily: "sans-serif" }}>
+      <h1>Cloud Cost Tracker (Simulated)</h1>
+      <p style={{ color: "#555" }}>
+        Visualizes EC2, S3, and total monthly costs. Built with Next.js + Chart.js
+      </p>
+
+      <div style={{ margin: "12px 0" }}>
+        <label>
+          <input type="radio" checked={range === "year"} onChange={() => setRange("year")} /> Year
+        </label>
+        <label style={{ marginLeft: 10 }}>
+          <input type="radio" checked={range === "last6"} onChange={() => setRange("last6")} /> Last 6 Months
+        </label>
+        <label style={{ marginLeft: 10 }}>
+          <input type="radio" checked={range === "quarter"} onChange={() => setRange("quarter")} /> Q4
+        </label>
+      </div>
+
+      <section style={{ background: "#fff", padding: 16, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+        <CostChart labels={labels} ec2Data={ec2} s3Data={s3} costData={cost} />
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12 }}>
+          <div><strong>Total Cost:</strong> ${total.toFixed(2)}</div>
+          <div><strong>Avg / Month:</strong> ${avg}</div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </section>
+    </main>
   );
 }
